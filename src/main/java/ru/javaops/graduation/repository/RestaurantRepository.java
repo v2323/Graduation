@@ -16,17 +16,10 @@ public interface RestaurantRepository extends BaseRepository<Restaurant> {
 
     Optional<Restaurant> getById(int id);
 
-//    @Query("SELECT r.name, r.description, r.menus FROM  Restaurant r left join Menu m on r.id=m.restaurant.id left join Dish d on m.id=d.menu.id WHERE m.dayOfWeak = LOWER(:today)")
-//    Optional<Restaurant> getWithDayOfWeak(String today);
-
     @EntityGraph(attributePaths = {"menus"}, type = EntityGraph.EntityGraphType.LOAD)
     Optional<Restaurant> findByIdAndMenus_DayOfWeak(int restId, String day);
-//    @Query("SELECT r FROM Restaurant r WHERE r.id=?1")
-//    Optional<Restaurant> getWithMenus(int id, String day);
-//    Optional<Restaurant> getWithMenus(int id);
 
-    //    @Query("SELECT r.name, r.description, r.menus FROM Restaurant r left join Menu m on r.id=m.restaurant.id left join Dish d on m.id=d.menu.id WHERE m.dayOfWeak = LOWER(:today)")
-//    @EntityGraph(attributePaths = {"menus"}, type = EntityGraph.EntityGraphType.LOAD)
-//    Optional<Restaurant> findByIdAndMenus_DayOfWeakAndMenus_Dishes_Name(int restId, String day, String name);
-//    Optional<Restaurant> findByIdAndMenus_DayOfWeak(int restId, String day);
+    @EntityGraph(attributePaths = {"menus"}, type = EntityGraph.EntityGraphType.LOAD)
+    List<Restaurant> findAllByMenus_DayOfWeak(String day);
+
 }

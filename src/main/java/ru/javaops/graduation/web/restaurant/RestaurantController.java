@@ -2,27 +2,28 @@ package ru.javaops.graduation.web.restaurant;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Sort;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import ru.javaops.graduation.model.Restaurant;
-import ru.javaops.graduation.model.User;
 import ru.javaops.graduation.repository.RestaurantRepository;
-import ru.javaops.graduation.repository.UserRepository;
-import ru.javaops.graduation.web.user.AdminUserController;
 
-import java.time.LocalDate;
+import javax.validation.Valid;
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+
+import static ru.javaops.graduation.util.validation.ValidationUtil.assureIdConsistent;
+import static ru.javaops.graduation.util.validation.ValidationUtil.checkNew;
 
 @RestController
 @RequestMapping(value = RestaurantController.REST_URL, produces = MediaType.APPLICATION_JSON_VALUE)
 @Slf4j
+@CacheConfig(cacheNames = "restaurants")
 public class RestaurantController {
     static final String REST_URL = "/api/restaurants";
 
@@ -31,30 +32,40 @@ public class RestaurantController {
 
     @GetMapping("/{id}")
     public Optional<Restaurant> get(@PathVariable int id) {
-//        String today = LocalDate.now().getDayOfWeek().name();
         String today = "TUESDAY";
-        int menuId=2;
         return repository.findByIdAndMenus_DayOfWeak(id, today);
-//        return repository.getWithMenus(id, today);
-//        return repository.getWithMenus(id);
-//        return repository.getWithMenus(id,menuId);
     }
 
-//    @GetMapping("/{name}")
-//    public Optional<Restaurant> getByName(@PathVariable String name) {
-//        return repository.getByName(name);
-//    }
+    @GetMapping("/withMenu")
+    public List<Restaurant> getAllWithMenus() {
+        String today = "TUESDAY";
+        return repository.findAllByMenus_DayOfWeak(today);
+    }
 
-//    @GetMapping
-//    public List<Restaurant> getAll() {
-//        log.info("getAll");
-//        return repository.findAll();
-//    }
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable int id) {
+        repository.delete(id);
+    }
 
-//    @GetMapping
-//    public Optional<Restaurant> getAll() {
-//        log.info("getAll");
-//        String today = "TUESDAY";
-//        return repository.getWithMenus(id,today);
-//    }
-}
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @CacheEvict(allEntries = true)
+    public ResponseEntity<Restaurant> createWithLocation(@Valid @RequestBody Restaurant restaurant) {
+        log.info("create {}", restaurant);
+        checkNew(restaurant);
+        URI uriOfNewResource = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path(REST_URL + "/{id}")
+                .buildAndExpand(restaurant.getId()).toUri();
+        return ResponseEntity.created(uriOfNewResource).body(restaurant);
+    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @CacheEvict(allEntries = true)
+    public void update(@Valid @RequestBody Restaurant restaurant, @PathVariable int id) {
+        log.info("update {} with id={}", restaurant, id);
+        assureIdConsistent(restaurant, id);
+        repository.save(restaurant);
+    }
+    }
+
