@@ -57,3 +57,6 @@ VALUES ('Pepperoni', 25.5, 1),
        ('Pancakes', 32.5, 19),
        ('Goulash', 11.5, 20),
        ('Solyanka', 27.5, 21);
+
+INSERT INTO VOTES (rest_id, user_id,vote_date)
+VALUES (1, 2,'2020-01-30');

@@ -35,7 +35,7 @@ public class Restaurant extends NamedEntity implements Serializable {
     @NoHtml   // https://stackoverflow.com/questions/17480809
     private String description;
 
-//    @Enumerated(EnumType.STRING)
+    //    @Enumerated(EnumType.STRING)
 //    @CollectionTable(name = "user_roles",
 //            joinColumns = @JoinColumn(name = "user_id"),
 //            uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "role"}, name = "uk_user_roles"))
@@ -43,9 +43,15 @@ public class Restaurant extends NamedEntity implements Serializable {
 //    @ElementCollection(fetch = FetchType.EAGER)
 //    @JoinColumn(name = "user_id") //https://stackoverflow.com/a/62848296/548473
 //    @OnDelete(action = OnDeleteAction.CASCADE)
-@OneToMany(fetch = FetchType.LAZY, mappedBy = "restaurant")//, cascade = CascadeType.REMOVE, orphanRemoval = true)
-@OrderBy("dayOfWeak DESC")
-@JsonManagedReference
-@OnDelete(action = OnDeleteAction.CASCADE) //https://stackoverflow.com/a/44988100/548473
-private List<Menu> menus;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "restaurant")//, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OrderBy("dayOfWeak DESC")
+    @JsonManagedReference
+    @OnDelete(action = OnDeleteAction.CASCADE) //https://stackoverflow.com/a/44988100/548473
+    private List<Menu> menus;
+
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "restaurant")//, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @JsonManagedReference
+    @OnDelete(action = OnDeleteAction.CASCADE) //https://stackoverflow.com/a/44988100/548473
+    private List<Vote> votes;
 }
