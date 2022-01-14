@@ -57,21 +57,21 @@ public class MenuController {
 
     @PostMapping(value = "/admin", consumes = MediaType.APPLICATION_JSON_VALUE)
     @CacheEvict(allEntries = true)
-    public ResponseEntity<Restaurant> createWithLocation(@Valid @RequestBody Restaurant restaurant) {
-        log.info("create {}", restaurant);
-        checkNew(restaurant);
+    public ResponseEntity<Menu> createWithLocation(@Valid @RequestBody Menu menu) {
+        log.info("create {}", menu);
+        checkNew(menu);
         URI uriOfNewResource = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path(REST_URL + "/{id}")
-                .buildAndExpand(restaurant.getId()).toUri();
-        return ResponseEntity.created(uriOfNewResource).body(restaurant);
+                .buildAndExpand(menu.getId()).toUri();
+        return ResponseEntity.created(uriOfNewResource).body(menu);
     }
 
-//    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
-//    @CacheEvict(allEntries = true)
-//    public void update(@Valid @RequestBody Restaurant restaurant, @PathVariable int id) {
-//        log.info("update {} with id={}", restaurant, id);
-//        assureIdConsistent(restaurant, id);
-//        repository.save(restaurant);
-//    }
+    @PutMapping(value = "admin/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @CacheEvict(allEntries = true)
+    public void update(@Valid @RequestBody Menu menu, @PathVariable int id) {
+        log.info("update {} with id={}", menu, id);
+        assureIdConsistent(menu, id);
+        repository.save(menu);
+    }
 }

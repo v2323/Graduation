@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -17,10 +18,13 @@ import java.time.LocalTime;
 @ToString(callSuper = true)
 public class Vote extends BaseEntity implements Serializable {
 
-//    @Column(name = "rest_id", nullable = false)
-//    private int restId;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
-    @Column(name = "user_id", nullable = false)
+        @Column(name = "rest_id", nullable = false)
+    private int restId;
+
+    @Column(name = "user_id", nullable = false, unique = true)
     private int userId;
 
 //    @Column(name = "vote_time")
@@ -29,9 +33,8 @@ public class Vote extends BaseEntity implements Serializable {
     @Column(name = "vote_date", nullable = false)
     private LocalDate voteDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "rest_id", nullable = false)
-    @JsonBackReference
-    private Restaurant restaurant;
-
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "rest_id", nullable = false)
+//    @JsonBackReference
+//    private Restaurant restaurant;
 }

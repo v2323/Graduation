@@ -7,8 +7,10 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import ru.javaops.graduation.error.DuplicateUsersVoteException;
 import ru.javaops.graduation.model.Restaurant;
 import ru.javaops.graduation.model.Vote;
 import ru.javaops.graduation.repository.RestaurantRepository;
@@ -22,13 +24,12 @@ import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
-import static ru.javaops.graduation.util.validation.ValidationUtil.assureIdConsistent;
-import static ru.javaops.graduation.util.validation.ValidationUtil.checkNew;
+import static ru.javaops.graduation.util.validation.ValidationUtil.*;
 
 @RestController
 @RequestMapping(value = VoteController.REST_URL, produces = MediaType.APPLICATION_JSON_VALUE)
 @Slf4j
-@CacheConfig(cacheNames = "restaurants")
+@CacheConfig(cacheNames = "votes")
 public class VoteController {
     static final String REST_URL = "/api/votes";
 
@@ -37,39 +38,43 @@ public class VoteController {
 
     @GetMapping("/{id}")
     public Optional<Vote> get(@PathVariable int id) {
-        int authUserId = SecurityUtil.authId();
-        return repository.findByRestaurant_IdAndUserId(id, authUserId);
+        return repository.findById(id);
     }
 
-//    @GetMapping("/withMenu")
-//    public List<Restaurant> getAllWithMenus() {
-//        String today = "TUESDAY";
-//        return repository.findAllByMenus_DayOfWeak(today);
-//    }
+    @GetMapping("")
+    public List<Vote> getAll() {
+        return repository.findAll();
+    }
 
-//    @DeleteMapping("/admin/{id}")
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
-//    public void delete(@PathVariable int id) {
-//        repository.delete(id);
-//    }
-//
-    @PostMapping(value = "/admin", consumes = MediaType.APPLICATION_JSON_VALUE)
-//    @CacheEvict(allEntries = true)
+    @DeleteMapping("/admin/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable int id) {
+        repository.delete(id);
+    }
+
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @CacheEvict(allEntries = true)
     public ResponseEntity<Vote> createWithLocation(@Valid @RequestBody Vote vote) {
         log.info("create {}", vote);
         checkNew(vote);
+        if (repository.findByUserId(vote.getUserId()).isPresent()) {
+            throw new DuplicateUsersVoteException("User can't have more than one vote");
+        }
+        Vote created = repository.save(vote);
         URI uriOfNewResource = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path(REST_URL + "/{id}")
                 .buildAndExpand(vote.getId()).toUri();
-        return ResponseEntity.created(uriOfNewResource).body(vote);
+        return ResponseEntity.created(uriOfNewResource).body(created);
     }
-//
-//    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
-//    @CacheEvict(allEntries = true)
-//    public void update(@Valid @RequestBody Restaurant restaurant, @PathVariable int id) {
-//        log.info("update {} with id={}", restaurant, id);
-//        assureIdConsistent(restaurant, id);
-//        repository.save(restaurant);
-//    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Transactional
+    @CacheEvict(allEntries = true)
+    public void update(@Valid @RequestBody Vote vote, @PathVariable int id) {
+        log.info("update {} with id={}", vote, id);
+        checkVoteDateTime(vote);
+        assureIdConsistent(vote, id);
+        repository.save(vote);
+    }
 }

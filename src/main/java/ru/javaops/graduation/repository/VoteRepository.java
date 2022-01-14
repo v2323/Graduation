@@ -10,5 +10,7 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public interface VoteRepository extends BaseRepository<Vote> {
 
-    Optional<Vote> findByRestaurant_IdAndUserId(int restId, int userId);
+    void getByUserId(int userId);
+
+    Optional<Vote> findByUserId(int userId);
 }

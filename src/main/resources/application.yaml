@@ -31,8 +31,9 @@ spring:
 
   # https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-application-properties.html#common-application-properties-cache
   cache:
-    cache-names: users
+    cache-names: users, restaurants, menus, dishes, votes
     caffeine.spec: maximumSize=1,expireAfterAccess=60s
+
 
 logging:
   level:
