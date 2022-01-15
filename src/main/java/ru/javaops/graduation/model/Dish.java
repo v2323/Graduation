@@ -40,4 +40,13 @@ public class Dish extends NamedEntity implements Serializable {
     @JoinColumn(name = "menu_id", nullable = false)
     @JsonBackReference
     private Menu menu;
+
+    public Dish(Double price) {
+        this.price = price;
+    }
+
+    public Dish(Integer id, String name, Double price) {
+        super(id, name);
+        this.price = price;
+    }
 }

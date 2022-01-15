@@ -24,7 +24,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@ToString(callSuper = true)
+@ToString(callSuper = true,exclude = {"menus"})
 public class Restaurant extends NamedEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -49,8 +49,16 @@ public class Restaurant extends NamedEntity implements Serializable {
     @OnDelete(action = OnDeleteAction.CASCADE) //https://stackoverflow.com/a/44988100/548473
     private List<Menu> menus;
 
+    public Restaurant(String description) {
+        this.description = description;
+    }
 
-//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "restaurant")//, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    public Restaurant(Integer id, String name, String description) {
+        super(id, name);
+        this.description = description;
+    }
+
+    //    @OneToMany(fetch = FetchType.LAZY, mappedBy = "restaurant")//, cascade = CascadeType.REMOVE, orphanRemoval = true)
 //    @JsonManagedReference
 //    @OnDelete(action = OnDeleteAction.CASCADE) //https://stackoverflow.com/a/44988100/548473
 //    private List<Vote> votes;

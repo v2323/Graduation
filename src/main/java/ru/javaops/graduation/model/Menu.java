@@ -19,7 +19,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@ToString(callSuper = true)
+@ToString(callSuper = true, exclude = {"dishes"})
 public class Menu extends BaseEntity implements Serializable {
 
     @Serial
@@ -55,4 +55,24 @@ public class Menu extends BaseEntity implements Serializable {
     @JsonManagedReference
     @OnDelete(action = OnDeleteAction.CASCADE) //https://stackoverflow.com/a/44988100/548473
     private List<Dish> dishes;
+
+    public Menu(String dayOfWeak) {
+        this.dayOfWeak = dayOfWeak;
+    }
+
+    public Menu(Integer id, String dayOfWeak) {
+        super(id);
+        this.dayOfWeak = dayOfWeak;
+    }
+
+    public Menu(Integer id, String dayOfWeak, Restaurant restaurant, List<Dish> dishes) {
+        super(id);
+        this.dayOfWeak = dayOfWeak;
+        this.dishes = dishes;
+    }
+
+    public Menu(String dayOfWeak, Restaurant restaurant, List<Dish> dishes) {
+        this.dayOfWeak = dayOfWeak;
+        this.dishes = dishes;
+    }
 }
