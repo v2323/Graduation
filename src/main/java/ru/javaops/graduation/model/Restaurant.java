@@ -1,31 +1,26 @@
 package ru.javaops.graduation.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import ru.javaops.graduation.HasIdAndEmail;
+import ru.javaops.graduation.HasId;
 import ru.javaops.graduation.util.validation.NoHtml;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "restaurants")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@ToString(callSuper = true,exclude = {"menus"})
-public class Restaurant extends NamedEntity implements Serializable {
+@ToString(callSuper = true, exclude = {"menus"})
+public class Restaurant extends NamedEntity implements HasId, Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -35,14 +30,6 @@ public class Restaurant extends NamedEntity implements Serializable {
     @NoHtml   // https://stackoverflow.com/questions/17480809
     private String description;
 
-    //    @Enumerated(EnumType.STRING)
-//    @CollectionTable(name = "user_roles",
-//            joinColumns = @JoinColumn(name = "user_id"),
-//            uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "role"}, name = "uk_user_roles"))
-//    @Column(name = "role")
-//    @ElementCollection(fetch = FetchType.EAGER)
-//    @JoinColumn(name = "user_id") //https://stackoverflow.com/a/62848296/548473
-//    @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "restaurant")//, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderBy("dayOfWeak DESC")
     @JsonManagedReference
@@ -53,13 +40,12 @@ public class Restaurant extends NamedEntity implements Serializable {
         this.description = description;
     }
 
+    public Restaurant(Restaurant r) {
+        this(r.id, r.name, r.description);
+    }
+
     public Restaurant(Integer id, String name, String description) {
         super(id, name);
         this.description = description;
     }
-
-    //    @OneToMany(fetch = FetchType.LAZY, mappedBy = "restaurant")//, cascade = CascadeType.REMOVE, orphanRemoval = true)
-//    @JsonManagedReference
-//    @OnDelete(action = OnDeleteAction.CASCADE) //https://stackoverflow.com/a/44988100/548473
-//    private List<Vote> votes;
 }

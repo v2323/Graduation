@@ -1,13 +1,13 @@
 package ru.javaops.graduation.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.*;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.LocalTime;
 
 
 @Entity
@@ -21,20 +21,25 @@ public class Vote extends BaseEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-        @Column(name = "rest_id", nullable = false)
+    @Column(name = "rest_id", nullable = false)
     private int restId;
 
     @Column(name = "user_id", nullable = false, unique = true)
     private int userId;
 
-//    @Column(name = "vote_time")
-//    private LocalTime voteTime;
-
     @Column(name = "vote_date", nullable = false)
     private LocalDate voteDate;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "rest_id", nullable = false)
-//    @JsonBackReference
-//    private Restaurant restaurant;
+    public Vote(Integer id, int restId, int userId, LocalDate voteDate) {
+        super(id);
+        this.restId = restId;
+        this.userId = userId;
+        this.voteDate = voteDate;
+    }
+
+    public Vote(int restId, int userId, LocalDate voteDate) {
+        this.restId = restId;
+        this.userId = userId;
+        this.voteDate = voteDate;
+    }
 }

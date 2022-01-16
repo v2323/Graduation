@@ -4,10 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import ru.javaops.graduation.model.Restaurant;
@@ -15,7 +16,6 @@ import ru.javaops.graduation.repository.RestaurantRepository;
 
 import javax.validation.Valid;
 import java.net.URI;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +39,14 @@ public class RestaurantController {
         return repository.findByIdAndMenus_DayOfWeak(id, today);
     }
 
+    @GetMapping()
+    @Cacheable
+    public List<Restaurant> getAll() {
+        return repository.findAll(Sort.by(Sort.Direction.ASC, "id", "name"));
+    }
+
     @GetMapping("/withMenu")
+    @Cacheable
     public List<Restaurant> getAllWithMenus() {
         String today = LocalDateTime.now().getDayOfWeek().name();
         return repository.findAllByMenus_DayOfWeak(today);
@@ -48,7 +55,7 @@ public class RestaurantController {
     @DeleteMapping("/admin/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable int id) {
-        repository.delete(id);
+        repository.deleteExisted(id);
     }
 
     @PostMapping(value = "/admin", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -56,13 +63,14 @@ public class RestaurantController {
     public ResponseEntity<Restaurant> createWithLocation(@Valid @RequestBody Restaurant restaurant) {
         log.info("create {}", restaurant);
         checkNew(restaurant);
+        Restaurant created = repository.save(restaurant);
         URI uriOfNewResource = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path(REST_URL + "/{id}")
                 .buildAndExpand(restaurant.getId()).toUri();
-        return ResponseEntity.created(uriOfNewResource).body(restaurant);
+        return ResponseEntity.created(uriOfNewResource).body(created);
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/admin/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @CacheEvict(allEntries = true)
     public void update(@Valid @RequestBody Restaurant restaurant, @PathVariable int id) {
@@ -70,5 +78,5 @@ public class RestaurantController {
         assureIdConsistent(restaurant, id);
         repository.save(restaurant);
     }
-    }
+}
 

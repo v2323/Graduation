@@ -4,16 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import ru.javaops.graduation.model.Menu;
-import ru.javaops.graduation.model.Restaurant;
 import ru.javaops.graduation.repository.MenuRepository;
-import ru.javaops.graduation.repository.RestaurantRepository;
-import ru.javaops.graduation.web.restaurant.RestaurantController;
 
 import javax.validation.Valid;
 import java.net.URI;
@@ -40,19 +38,21 @@ public class MenuController {
     }
 
     @GetMapping("/day/{dayOfWeak}")
-    public Optional<Menu> get(@PathVariable String dayOfWeak) {
+    @Cacheable
+    public List<Menu> get(@PathVariable String dayOfWeak) {
         return repository.findByDayOfWeak(dayOfWeak);
     }
 
-    @GetMapping("/withDishes/{restId}")
-    public List<Menu> getAllWithDishes(@PathVariable int restId) {
-        return repository.findAllByRestaurant_id(restId);
+    @GetMapping()
+    @Cacheable
+    public List<Menu> getAll() {
+        return repository.findAll();
     }
 
     @DeleteMapping("/admin/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable int id) {
-        repository.delete(id);
+        repository.deleteExisted(id);
     }
 
     @PostMapping(value = "/admin", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -60,10 +60,11 @@ public class MenuController {
     public ResponseEntity<Menu> createWithLocation(@Valid @RequestBody Menu menu) {
         log.info("create {}", menu);
         checkNew(menu);
+        Menu created = repository.save(menu);
         URI uriOfNewResource = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path(REST_URL + "/{id}")
                 .buildAndExpand(menu.getId()).toUri();
-        return ResponseEntity.created(uriOfNewResource).body(menu);
+        return ResponseEntity.created(uriOfNewResource).body(created);
     }
 
     @PutMapping(value = "admin/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)

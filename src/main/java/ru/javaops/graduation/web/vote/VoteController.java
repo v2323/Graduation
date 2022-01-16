@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,13 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import ru.javaops.graduation.error.DuplicateUsersVoteException;
-import ru.javaops.graduation.model.Restaurant;
 import ru.javaops.graduation.model.Vote;
-import ru.javaops.graduation.repository.RestaurantRepository;
 import ru.javaops.graduation.repository.VoteRepository;
-import ru.javaops.graduation.util.UserUtil;
-import ru.javaops.graduation.web.SecurityUtil;
-import ru.javaops.graduation.web.restaurant.RestaurantController;
 
 import javax.validation.Valid;
 import java.net.URI;
@@ -41,7 +37,8 @@ public class VoteController {
         return repository.findById(id);
     }
 
-    @GetMapping("")
+    @GetMapping()
+    @Cacheable
     public List<Vote> getAll() {
         return repository.findAll();
     }
@@ -49,7 +46,7 @@ public class VoteController {
     @DeleteMapping("/admin/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable int id) {
-        repository.delete(id);
+        repository.deleteExisted(id);
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -67,7 +64,7 @@ public class VoteController {
         return ResponseEntity.created(uriOfNewResource).body(created);
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/admin/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Transactional
     @CacheEvict(allEntries = true)
